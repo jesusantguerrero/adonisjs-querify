@@ -1,5 +1,5 @@
 {
-  "name": "adonisjs-querify",
+  "name": "@freesgen/adonisjs-querify",
   "version": "1.0.0",
   "description": "provide controller, model to handle basic crud operations",
   "main": "provider/Provider.js",
