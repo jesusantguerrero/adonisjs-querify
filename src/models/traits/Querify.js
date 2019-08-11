@@ -9,7 +9,6 @@ class Querify {
   }
 
   getModelQuery(query) {
-    console.log(query)
     let modelQuery = this.model.query();
     modelQuery = this.getRelationships(query.relationships, modelQuery);
     modelQuery = this.getFilters(query.filter, modelQuery);
@@ -49,7 +48,6 @@ getFilters(filters, modelQuery) {
 }
 
 getSorts(sorts, modelQuery) {
-  console.log(sorts);
   if (sorts) {
     sorts = this.splitAndTrim(sorts);
     sorts.forEach( sort => {
@@ -74,11 +72,34 @@ getPaginate(limit, page, modelQuery) {
 
 
   addFilter(field, value, modelQuery) {
-    const optionalValues = value.split(',').map( optional => optional.trim());
+    let optionalValues, disableSecondWhere;
+    switch (typeof value) {
+      case 'string':
+        optionalValues = this.splitAndTrim(value);
+        break;
+      case 'object':
+          if (Array.isArray(value)) {
+            optionalValues = value;
+            disableSecondWhere = true 
+          }
+          break;
+          default:
+            optionalValues = []
+        break;
+    }
+    
     optionalValues.forEach( (optionalValue, index) => {
       let where = "where"
-      if (index) {
+      if (index && !disableSecondWhere) {
         where = "orWhere"
+      }
+
+      const isBetween = optionalValue.includes("~", 1);
+
+      if (isBetween) {
+        const betweenArgs = this.splitAndTrim(optionalValue, '~');
+        modelQuery[`${where}Between`](field, betweenArgs)
+        return
       }
 
       switch (optionalValue.slice(0,1)) {
@@ -92,10 +113,10 @@ getPaginate(limit, page, modelQuery) {
           modelQuery[where](field,'LIKE', optionalValue)
           break;
         case '~':
-          modelQuery[`${were}Not`](field, optionalValue.slice(1))
+          modelQuery[`${where}Not`](field, optionalValue.slice(1))
           break;
         case '$':
-          modelQuery[`${were}Null`](field, optionalValue.slice(1))
+          modelQuery[`${where}Null`](field, optionalValue.slice(1))
           break;
         default:
           modelQuery[where](field, optionalValue)
@@ -106,7 +127,7 @@ getPaginate(limit, page, modelQuery) {
   }
 
   splitAndTrim(text, separator = ',') {
-    return text.split(',').map( optional => optional.trim());
+    return text.split(separator).map( optional => optional.trim());
   }
 }
 
