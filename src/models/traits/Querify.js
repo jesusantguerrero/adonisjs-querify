@@ -2,74 +2,76 @@
 
 class Querify {
   register (Model) {
-    Model.getFromQuery = (query) => {
+    Model.getFromQuery = (query, id) => {
       this.model = Model;
-      return this.getModelQuery(query)
+      return this.getModelQuery(query, id)
     }
   }
 
-  getModelQuery(query) {
+  getModelQuery(query, id) {
     let modelQuery = this.model.query();
     modelQuery = this.getRelationships(query.relationships, modelQuery);
     modelQuery = this.getFilters(query.filter, modelQuery);
     modelQuery = this.getSorts(query.sort, modelQuery);
-    modelQuery = this.getPaginate(query.limit, query.page, modelQuery);
+    if (id) {
+      return modelQuery.where({id: id}).fetch()
+    }
 
+    modelQuery = this.getPaginate(query.limit, query.page, modelQuery);
     return modelQuery;
 }
 
-/**
- * get all the ralationships in the query
- * @param {String} relationships 
- * @return Array
- */
-getRelationships(relationships, modelQuery) {
-  if (relationships) {
-    relationships = relationships.split(',').map(relation => relation.trim());
+  /**
+   * get all the ralationships in the query
+   * @param {String} relationships 
+   * @return Array
+   */
+  getRelationships(relationships, modelQuery) {
+    if (relationships) {
+      relationships = relationships.split(',').map(relation => relation.trim());
 
-    relationships.forEach((relation) => {
-      modelQuery.with(relation);
-    })
+      relationships.forEach((relation) => {
+        modelQuery.with(relation);
+      })
+    }
+
+    return modelQuery
   }
 
-  return modelQuery
-}
+  getFilters(filters, modelQuery) {
+    if (filters) {
+      filters = Object.entries(filters);
+      filters.forEach( filter => {
+        const [field, value] = filter;
+        this.addFilter(field, value, modelQuery)
+      })
+    }
 
-getFilters(filters, modelQuery) {
-  if (filters) {
-    filters = Object.entries(filters);
-    filters.forEach( filter => {
-      const [field, value] = filter;
-      this.addFilter(field, value, modelQuery)
-    })
+    return modelQuery
   }
 
-  return modelQuery
-}
+  getSorts(sorts, modelQuery) {
+    if (sorts) {
+      sorts = this.splitAndTrim(sorts);
+      sorts.forEach( sort => {
+        const direction = sort.slice(0,1) == "-" ? "DESC" : "ASC";
+        sort = direction == "ASC" ? sort : sort.slice(1);
+        modelQuery.orderBy(sort, direction);
+      })
+    }
 
-getSorts(sorts, modelQuery) {
-  if (sorts) {
-    sorts = this.splitAndTrim(sorts);
-    sorts.forEach( sort => {
-      const direction = sort.slice(0,1) == "-" ? "DESC" : "ASC";
-      sort = direction == "ASC" ? sort : sort.slice(1);
-      modelQuery.orderBy(sort, direction);
-    })
+    return modelQuery
   }
 
-  return modelQuery
-}
+  getPaginate(limit, page, modelQuery) {
+    if (limit && page) {
+      return modelQuery.paginate(page, limit);
+    } else if (limit) {
+      modelQuery.limit(limit);
+    }
 
-getPaginate(limit, page, modelQuery) {
-  if (limit && page) {
-    return modelQuery.paginate(page, limit);
-  } else if (limit) {
-    modelQuery.limit(limit);
+    return modelQuery.fetch();
   }
-
-  return modelQuery.fetch();
-}
-
 
   addFilter(field, value, modelQuery) {
     let optionalValues, disableSecondWhere;

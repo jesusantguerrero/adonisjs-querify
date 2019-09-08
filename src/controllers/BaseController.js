@@ -23,31 +23,11 @@ class BaseController  {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({request, response, auth}) {
+  async index ({request, response}) {
     let query = request.get();
-    const userData = await auth.getUser()
-    
-    if (query.filter) { 
-      query.filter.id_company = userData.id_company.toString()
-    } else {
-      query.filter = { id_company: userData.id_company.toString()}
-    }
-
-    console.log(query)
-      return response.json(await this.model.getFromQuery(query));
+    return response.json(await this.model.getFromQuery(query));
   }
 
-  /**
-   * Render a form to be used for creating a new ticket.
-   * GET tickets/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
-  }
 
   /**
    * Create/save a new ticket.
@@ -57,10 +37,8 @@ class BaseController  {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ auth, request, response }) {
+  async store ({ request, response }) {
     const formData = request.all();
-    const userData = await auth.getUser()
-    formData.id_company = userData.id_company;
 
     let resource;
     try {
@@ -90,14 +68,9 @@ class BaseController  {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+  async show ({ params, request, response}) {
     const query = request.get();
-    
-    if (Object.keys(query).length) {
-      let modelQuery = this.getModelQuery(query);
-      return response.json(await modelQuery.where({id: params.id}).fetch());
-    }
-    response.json(await this.model.find(params.id))
+    return response.json(await this.model.getFromQuery(query, params.id));
   }
 
 
@@ -153,8 +126,8 @@ class BaseController  {
         status: {
           message: "User nor found"
         }
-      });
-
+      });                                             
+ 
     }
     
     try{
