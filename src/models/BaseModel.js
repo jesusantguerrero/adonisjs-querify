@@ -11,7 +11,7 @@ class BaseModel extends Model{
   
   static boot () {
     super.boot()
-    this.addTrait('Querify')
+    this.addTrait('@provider:Freesgen/Querify')
   }
 }
 
