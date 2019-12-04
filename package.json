@@ -1,6 +1,6 @@
 {
   "name": "adonisjs-querify",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "provide controller, model to handle basic crud operations",
   "main": "provider/Provider.js",
   "scripts": {

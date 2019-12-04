@@ -2,9 +2,9 @@
 
 class Querify {
   register (Model) {
-    Model.getFromQuery = (query, id) => {
+    Model.getFromQuery = (query, id, extendFunction) => {
       this.model = Model;
-      return this.getModelQuery(query, id)
+      return this.getModelQuery(query, id, extendFunction)
     }
   }
 
