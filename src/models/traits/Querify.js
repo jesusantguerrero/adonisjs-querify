@@ -8,14 +8,20 @@ class Querify {
     }
   }
 
-  getModelQuery(query, id) {
+  getModelQuery(query, id, extendFunction) {
     let modelQuery = this.model.query();
     modelQuery = this.getRelationships(query.relationships, modelQuery);
     modelQuery = this.getFilters(query.filter, modelQuery);
     modelQuery = this.getSorts(query.sort, modelQuery);
+    
+    if (extendFunction) {
+      modelQuery = extendFunction(modelQuery);
+    }
+
     if (id) {
       return modelQuery.where({id: id}).fetch()
     }
+
 
     modelQuery = this.getPaginate(query.limit, query.page, modelQuery);
     return modelQuery;
