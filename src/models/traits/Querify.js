@@ -15,7 +15,7 @@ class Querify {
     modelQuery = this.getSorts(query.sort, modelQuery);
     
     if (extendFunction) {
-      modelQuery = extendFunction(modelQuery);
+      modelQuery = extendFunction(modelQuery, query);
     }
 
     if (id) {
